@@ -14,7 +14,7 @@
     "@medusajs/file-local": "^2.11.1",
     "@medusajs/framework": "^2.11.1",
     "@medusajs/medusa": "^2.11.1",
-    "@mikro-orm/cli": "^6.4.16",
+    "@mikro-orm/cli": "6.4.16",
     "pg": "^8.13.3",
     "redis": "^4.7.0"
   },
