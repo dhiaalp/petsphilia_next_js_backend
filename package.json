@@ -1,0 +1,27 @@
+{
+  "name": "petsphilia-backend",
+  "private": true,
+  "scripts": {
+    "dev": "medusa develop",
+    "build": "medusa build",
+    "migrate": "medusa db:migrate",
+    "start": "npm run migrate && medusa start --verbose"
+  },
+  "dependencies": {
+    "@medusajs/admin-sdk": "^2.13.4",
+    "@medusajs/draft-order": "^2.13.4",
+    "@medusajs/file": "^2.11.1",
+    "@medusajs/file-local": "^2.11.1",
+    "@medusajs/framework": "^2.11.1",
+    "@medusajs/medusa": "^2.11.1",
+    "@mikro-orm/cli": "^6.4.16",
+    "pg": "^8.13.3",
+    "redis": "^4.7.0"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2"
+  },
+  "engines": {
+    "node": ">=20.x"
+  }
+}
