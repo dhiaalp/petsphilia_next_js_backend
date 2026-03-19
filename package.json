@@ -5,7 +5,7 @@
     "dev": "medusa develop",
     "build": "medusa build",
     "migrate": "medusa db:migrate",
-    "start": "npm run migrate && medusa start --verbose"
+    "start": "npm run migrate && cd .medusa/server && npx medusa start --verbose"
   },
   "dependencies": {
     "@medusajs/admin-sdk": "^2.13.4",
