@@ -12,6 +12,7 @@ const redisUrl = process.env.REDIS_URL || "";
 const s3Bucket = process.env.S3_BUCKET_NAME || "";
 const s3Region = process.env.AWS_REGION || "";
 const s3Endpoint = process.env.S3_ENDPOINT || "";
+const stripeApiKey = process.env.STRIPE_API_KEY || "";
 const fileProxyUrl =
   process.env.FILE_PROXY_URL || `${storefrontUrl.replace(/\/$/, "")}/api/files`;
 const hasS3Config =
@@ -72,5 +73,24 @@ export default defineConfig({
         ],
       },
     },
+    ...(stripeApiKey
+      ? [
+          {
+            resolve: "@medusajs/medusa/payment",
+            options: {
+              providers: [
+                {
+                  resolve: "@medusajs/payment-stripe",
+                  id: "stripe",
+                  options: {
+                    apiKey: stripeApiKey,
+                    webhookSecret: process.env.STRIPE_WEBHOOK_SECRET || "",
+                  },
+                },
+              ],
+            },
+          },
+        ]
+      : []),
   ],
 });
