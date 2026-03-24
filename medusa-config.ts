@@ -14,7 +14,7 @@ const s3Region = process.env.AWS_REGION || "";
 const s3Endpoint = process.env.S3_ENDPOINT || "";
 const stripeApiKey = process.env.STRIPE_API_KEY || "";
 const fileProxyUrl =
-  process.env.FILE_PROXY_URL || `${storefrontUrl.replace(/\/$/, "")}/api/files`;
+  process.env.FILE_PROXY_URL || (railwayPublicUrl ? `${railwayPublicUrl}/files` : `${storefrontUrl.replace(/\/$/, "")}/api/files`);
 const hasS3Config =
   Boolean(s3Bucket) &&
   Boolean(s3Region) &&
