@@ -1,17 +1,21 @@
-import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
+import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 
-const s3Client = new S3Client({
-  region: process.env.AWS_REGION || "auto",
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID || "",
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "",
-  },
-  ...(process.env.S3_ENDPOINT ? { endpoint: process.env.S3_ENDPOINT } : {}),
-  forcePathStyle: false,
-});
-
-const BUCKET = process.env.S3_BUCKET_NAME || "";
+let _s3: S3Client | null = null;
+function getS3() {
+  if (!_s3) {
+    _s3 = new S3Client({
+      region: process.env.AWS_REGION || "auto",
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID || "",
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "",
+      },
+      ...(process.env.S3_ENDPOINT ? { endpoint: process.env.S3_ENDPOINT } : {}),
+      forcePathStyle: false,
+    });
+  }
+  return _s3;
+}
 
 const MIME_TYPES: Record<string, string> = {
   png: "image/png",
@@ -20,31 +24,31 @@ const MIME_TYPES: Record<string, string> = {
   gif: "image/gif",
   webp: "image/webp",
   svg: "image/svg+xml",
-  avif: "image/avif",
 };
 
 export async function GET(req: MedusaRequest, res: MedusaResponse) {
-  const filePath = (req.params as Record<string, string>).path;
+  const bucket = process.env.S3_BUCKET_NAME || "";
+  const encodedKey = req.params.fileKey;
 
-  if (!filePath || !BUCKET) {
+  if (!encodedKey || !bucket) {
     res.status(400).json({ error: "Invalid request" });
     return;
   }
 
-  try {
-    const command = new GetObjectCommand({
-      Bucket: BUCKET,
-      Key: filePath,
-    });
+  // The file key is URL-encoded by the S3 provider (encodeURIComponent)
+  const key = decodeURIComponent(encodedKey);
 
-    const s3Res = await s3Client.send(command);
+  try {
+    const s3Res = await getS3().send(
+      new GetObjectCommand({ Bucket: bucket, Key: key })
+    );
 
     if (!s3Res.Body) {
       res.status(404).json({ error: "File not found" });
       return;
     }
 
-    const ext = filePath.split(".").pop()?.toLowerCase() || "";
+    const ext = key.split(".").pop()?.toLowerCase() || "";
     const contentType =
       s3Res.ContentType || MIME_TYPES[ext] || "application/octet-stream";
 
@@ -54,8 +58,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     const bytes = await s3Res.Body.transformToByteArray();
     res.status(200).end(Buffer.from(bytes));
   } catch (err: unknown) {
-    const code = (err as { name?: string }).name;
-    if (code === "NoSuchKey") {
+    if ((err as { name?: string }).name === "NoSuchKey") {
       res.status(404).json({ error: "File not found" });
     } else {
       console.error("S3 proxy error:", err);
