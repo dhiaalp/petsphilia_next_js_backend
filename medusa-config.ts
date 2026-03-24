@@ -43,13 +43,16 @@ export default defineConfig({
                 resolve: "@medusajs/file-s3",
                 id: "s3",
                 options: {
-                  file_url: fileProxyUrl.replace(/\/$/, ""),
+                  file_url: process.env.FILE_PROXY_URL || fileProxyUrl.replace(/\/$/, ""),
                   bucket: s3Bucket,
                   region: s3Region,
                   access_key_id: process.env.AWS_ACCESS_KEY_ID,
                   secret_access_key: process.env.AWS_SECRET_ACCESS_KEY,
                   prefix: "uploads/",
                   ...(s3Endpoint ? { endpoint: s3Endpoint } : {}),
+                  additional_client_config: {
+                    forcePathStyle: false,
+                  },
                 },
               }
             : {
